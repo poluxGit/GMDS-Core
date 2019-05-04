@@ -1,0 +1,21 @@
+<phpunit bootstrap="vendor/autoload.php">
+    <testsuites>
+        <testsuite name="CoreManagerLoadSettings">
+          <file>tests/core/CoreManagerTest.php</file>
+        </testsuite>
+        <!-- <testsuite name="CoreDataManagement">
+          <file>tests/core/DataFactoryTest.php</file>
+          <file>tests/core/data/ModelTest.php</file>
+          <file>tests/core/data/ObjectDefinitionTest.php</file>
+          <file>tests/core/data/LinkDefinitionTest.php</file>
+          <file>tests/core/data/LinkMetaDefinitionTest.php</file>
+          <file>tests/core/data/ObjectMetaDefinitionTest.php</file>
+        </testsuite> -->
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./src/</directory>
+        </whitelist>
+    </filter>
+
+</phpunit>

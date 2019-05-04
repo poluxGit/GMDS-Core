@@ -1,0 +1,22 @@
+{
+  "app_name":"My GDTA Dev App",
+  
+  "databases":[
+    {
+      "id":"maindb",
+      "dbtype":"mysql",
+      "host":"localhost",
+      "port":"3336",
+      "schema":"GDTA",
+      "user":"root",
+      "pass":"dev"
+    }
+  ],
+  "vaults":[
+    {
+      "id":"localfs",
+      "type":"local",
+      "rootPath":"."
+    }
+  ]
+}

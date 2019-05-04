@@ -1,0 +1,38 @@
+{
+    "name": "poluxGit/GMDS-Core",
+    "type": "library",
+    "license": "Apache license 2.0",
+    "homepage": "https://github.com/poluxGit/GMDS-Core",
+    "description": "Generic Model Data Storage - Core (PHP)",
+    "keywords": ["personal", "poluxGit", "php"],
+    "authors": [
+        {
+            "name": "polux_fr",
+            "email": "poluxmsn@free.fr"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "smarty/smarty": "@stable"
+    },
+    "require-dev": {
+      "phpunit/php-code-coverage": "^6.1",
+			"squizlabs/php_codesniffer": "^2.9.2",
+			"phpmd/phpmd": "@stable",
+			"sebastian/phpcpd": "@stable",
+			"pdepend/pdepend": "@stable",
+			"phploc/phploc": "^4.0.1",
+			"phpunit/phpunit": "^7.5.1",
+			"phpdocumentor/phpdocumentor": "^2.9.0",
+			"mayflower/php-codebrowser": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "GMDS\\Core\\": "src/core",
+            "GDTA\\Test\\": "tests/core"
+        }
+    },
+		"config": {
+			"optimize-autoloader": true
+		}
+}

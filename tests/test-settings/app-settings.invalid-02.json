@@ -1,0 +1,21 @@
+{
+  "system_name":"GMDS Dev Instance 01",
+  "app_version":"dev-01",
+  "databases":[
+    {
+      "id":"maindb",
+      "dbtype":"mysql",
+      "port":"3336",
+      "schema":"GDTA",
+      "user":"root",
+      "pass":"dev"
+    }
+  ],
+  "vaults":[
+    {
+      "id":"localfs",
+      "type":"local",
+      "rootPath":"."
+    }
+  ]
+}
