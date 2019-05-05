@@ -1,24 +1,26 @@
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
-        <testsuite name="CoreManagerLoadSettings">
-          <file>tests/core/CoreManagerTest.php</file>
+        <testsuite name="ApplicationDeployment">
+          <file>tests/core/ApplicationTest.php</file>
         </testsuite>
-        <testsuite name="DatabaseComponentsTesting">
-          <file>tests/core/data/database/DatabaseHandlerTest.php</file>
-        </testsuite>
-        <!-- <testsuite name="CoreDataManagement">
+        <testsuite name="CoreDataManagement">
           <file>tests/core/DataFactoryTest.php</file>
           <file>tests/core/data/ModelTest.php</file>
           <file>tests/core/data/ObjectDefinitionTest.php</file>
           <file>tests/core/data/LinkDefinitionTest.php</file>
           <file>tests/core/data/LinkMetaDefinitionTest.php</file>
           <file>tests/core/data/ObjectMetaDefinitionTest.php</file>
-        </testsuite> -->
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist>
             <directory suffix=".php">./src/</directory>
         </whitelist>
     </filter>
-
+    <logging>
+        <log type="coverage-html" target="./build/coverage"
+              lowUpperBound="35" highLowerBound="70"/>
+        <log type="coverage-clover" target="./build/logs/clover.xml"/>
+        <log type="junit" target="./build/logs/junit.xml"/>
+    </logging>
 </phpunit>

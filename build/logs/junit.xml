@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="CoreManagerLoadSettings" tests="3" assertions="3" errors="0" failures="0" skipped="0" time="0.005007">
+    <testsuite name="CoreManagerTest" file="F:\projects\GMDS-Core\tests\core\CoreManagerTest.php" tests="3" assertions="3" errors="0" failures="0" skipped="0" time="0.005007">
+      <testcase name="testLoadSystemSettingsFromNonExistingFile" class="CoreManagerTest" classname="CoreManagerTest" file="F:\projects\GMDS-Core\tests\core\CoreManagerTest.php" line="19" assertions="1" time="0.005007"/>
+      <testcase name="testLoadSystemSettingsFromInvalidFileMandatoryFieldsMissing" class="CoreManagerTest" classname="CoreManagerTest" file="F:\projects\GMDS-Core\tests\core\CoreManagerTest.php" line="30" assertions="1" time="0.000000"/>
+      <testcase name="testLoadSystemSettingsFromInvalidFileDBFieldsMissing" class="CoreManagerTest" classname="CoreManagerTest" file="F:\projects\GMDS-Core\tests\core\CoreManagerTest.php" line="42" assertions="1" time="0.000000"/>
+    </testsuite>
+  </testsuite>
+</testsuites>

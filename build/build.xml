@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="GMDS" default="ci" basedir=".">
+  <property name="source" value="src" />
+	<property name="rootdir" value="${project.basedir}" />
+
+	<autoloader autoloaderpath="vendor/autoload.php"/>
+
+	<!-- TACHE CI - TRAITEMENT PRINCIPAL -->
+  <target name="ci"
+      description="Tâche principale d'intégration continue"
+      depends="clean,qa"
+  />
+
+	<!-- TACHE CLEANING - CLEANING BUILD DIRECTORY SUBPATHS -->
+  <target name="clean" description="Vide les répertoires d'artefacts">
+
+		<delete dir="${rootdir}/build/api" />
+    <delete dir="${rootdir}/build/code-browser" />
+    <delete dir="${rootdir}/build/coverage" />
+    <delete dir="${rootdir}/build/logs" />
+    <delete dir="${rootdir}/build/pdepend" />
+		<mkdir dir="${rootdir}/build/api" />
+		<mkdir dir="${rootdir}/build/code-browser" />
+		<mkdir dir="${rootdir}/build/coverage" />
+		<mkdir dir="${rootdir}/build/logs" />
+		<mkdir dir="${rootdir}/build/pdepend" />
+  </target>
+
+	<!-- TACHE php-composer - COMPOSER  -->
+	<!-- <target name="phpcomp" description="PHP Composer - Gestion des dépendances">
+    <ComposerTask command="update"/>
+	</target> -->
+
+	<!-- Outils d'analyse -->
+  <target name="qa" description="Lance les outils d'analyse">
+		<phingcall target="buildParamDisplay" />
+		<phingcall target="phpcompupd" />
+		<phingcall target="pdepend" />
+    <phingcall target="phpmd" />
+    <phingcall target="phpcpd" />
+    <phingcall target="phploc" />
+    <phingcall target="phpcs" />
+    <!-- <phingcall target="phpdoc" /> -->
+    <phingcall target="phpunit" />
+    <phingcall target="phpcb" />
+  </target>
+
+	<target name="buildParamDisplay" description="Affichage des variables locales">
+		<echo msg="Phing project nbame : ${phing.project.name}" />
+		<echo msg="Project basedir : ${project.basedir}" />
+		<echo msg="Calculated RootDir : ${rootdir}" />
+		<echo msg="Workspace : ${ws}" />
+	</target>
+
+	<target name="phpcompupd" description="PHP Composer - DUMP-autoload command">
+		<exec logoutput="true" dir="${rootdir}" command="composer dump-autoload" escape="false" />
+	</target>
+
+	<target name="pdepend" description="PHP Depend">
+		<phpdepend file="${rootdir}/${source}" >
+			<logger type="jdepend-xml" outfile="${project.basedir}/build/logs/jdepend.xml" />
+			<logger type="jdepend-chart" outfile="${project.basedir}/build/pdepend/dependencies.svg" />
+			<logger type="overview-pyramid" outfile="${project.basedir}/build/pdepend/overview-pyramid.svg" />
+		</phpdepend>
+	</target>
+
+	<target name="phpmd" description="PHP Mess Detector - Statistiques Qualité du code">
+    <phpmd file="${rootdir}/${source}">
+       <formatter type="xml" outfile="${rootdir}/build/phpmd.xml" />
+    </phpmd>
+	</target>
+
+	<target name="phpcpd" description="PHP CPD - Détection code dupliqué...">
+    <phpcpd file="${rootdir}/${source}">
+      <formatter type="pmd" outfile="${rootdir}/build/logs/pmd-cpd.xml"/>
+    </phpcpd>
+	</target>
+
+	<target name="phploc" description="PHP Loc - Statistiques / Métriques">
+  	<exec logoutput="true" dir="${rootdir}" command="phploc --log-csv '${rootdir}/build/logs/phploc.csv' '${rootdir}/${source}'" escape="false" />
+	</target>
+
+	<target name="phpcs" description="PHP CodeSniffer - Norme de codage">
+	  <phpcodesniffer standard="Zend">
+      <fileset dir="${rootdir}/${source}">
+        <include name="**/*.php"/>
+      </fileset>
+      <formatter type="checkstyle" outfile="${rootdir}/build/logs/checkstyle.xml"/>
+	  </phpcodesniffer>
+	</target>
+
+	<target name="phpdoc" description="PHPDoc - Documentation">
+    <phpdoc2  title="${phing.project.name} - API Documentation"
+            destdir="${rootdir}/build/api"
+            template="responsive-twig">
+      <fileset dir="${rootdir}/${source}">
+          <include name="**/*.php"/>
+      </fileset>
+    </phpdoc2>
+	</target>
+
+	<target name="phpunit" description="PHPUnit - Tests">
+    <exec logoutput="true" dir="${rootdir}" command="phpunit --testdox --coverage-clover ${rootdir}/build/logs/clover.xml --coverage-html ${rootdir}/build/coverage/" escape="false"/>
+	</target>
+
+	<target name="phpcb" description="PHPCodeBrowser - Visualiseur de code PHP - Jenkins">
+    <exec logoutput="true" command="phpcb --log '${project.basedir}/build/logs' --source '${project.basedir}/${source}' --output '${project.basedir}/build/code-browser'" escape="false" />
+	</target>
+
+</project>
