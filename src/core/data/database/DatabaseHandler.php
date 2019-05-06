@@ -154,13 +154,10 @@ class DatabaseHandler
 
       self::$_oLogger->addLog('queryAndFetch | SQL : %s.',[$pSQLQuery]);
       self::$_oLogger->flushLogsToFile();
-
       $sth = $this->getPDOObject()->prepare($pSQLQuery);
       $sth->execute();
       $laResult = $sth->fetchAll(\PDO::FETCH_ASSOC);
-
       self::$_oLogger->addLog('queryAndFetch | Nb Results : %s.',[strval(count($laResult))]);
-
 
     } catch (\Exception $e) {
       throw new CoreException (

@@ -9,29 +9,27 @@ use GMDS\Core\Data\Database\SQL\SQLQueryGenerator;
 /**
  * DatabaseObject
  *
- * Classe abstraite d'objet persistant en base de données.
+ * Data persistance applicative layer
  */
 class DatabaseObject
 {
-  friend DatabaseObjectField;
-
   // ***************************************************************************
   // Private properties
   // ***************************************************************************
   private $_oDbConnection         = null;
   private $_sTablename            = null;
   private $_aLinkedTables         = null;
-  private $_aDbKeys               = [];
-  private $_aFieldsDefinition     = [];
-  private $_aFieldsInitialValues  = [];
-  private $_aFieldsCurrentValues  = [];
+  // private $_aDbKeys               = [];
+  // private $_aFieldsDefinition     = [];
+  // private $_aFieldsInitialValues  = [];
+  // private $_aFieldsCurrentValues  = [];
 
   /**
    * Fields definition
    *
    * @var DatabaseObjectFields
    */
-  private DatabaseObjectFields $_oFields = null;
+  public $_oFields = null;
 
   // ***************************************************************************
   // Default constructor
@@ -51,8 +49,12 @@ class DatabaseObject
     else {
       $this->_oDbConnection = $oDB;
     }
+    $this->_oFields = new DatabaseObjectFields($this);
   }//end __construct()
 
+  // ***************************************************************************
+  // Fields definition Management
+  // ***************************************************************************
   /**
    * Define a field for current object
    *
@@ -78,251 +80,172 @@ class DatabaseObject
       $sFieldName,
       $sSQLFieldDefinition,
       $sFieldType,
-      $xDefaultValue=null,
-      $isMandatory=false,
-      $isKey=false,
-      $iOrder=0
+      $xDefaultValue,
+      $isMandatory,
+      $isKey,
+      $iOrder
     );
 
     if (\is_null($loObj)) {
       throw new CoreException(
         "defineCommonField",
         "Le champ '%s' est deja declare.",
-        [$sSettingsFilepath]
+        [$sFieldName]
       );
     }
   }//end defineCommonField()
 
 
-  public function defineLinkedField(
-    // $sFieldName,
-    // $sSQLFieldDefinition,
-    // $sFieldType,
-    // $xDefaultValue=null,
-    // $isMandatory=false,
-    // $isKey=false,
-    // $iOrder=0
-  ) {
-    // TODO To implement
+  public function defineLinkedField($sLinkedTablename,$sFieldName,$sSQLFieldDefinition,$sSQLTargetTableFieldName,$sSQLSourceTableFieldName,$iOrder=0)
+  {
+    $loObj = $this->_oFields->addLinkedTableField($sLinkedTablename,$sFieldName,$sSQLFieldDefinition,$sSQLTargetTableFieldName,$sSQLSourceTableFieldName,$iOrder);
+
+    if (\is_null($loObj)) {
+      throw new defineLinkedField(
+        "defineCommonField",
+        "Le champ '%s' est deja declare.",
+        [$sFieldName]
+      );
+    }
   }//end defineLinkedField()
 
+  // ***************************************************************************
+  // TODEF
+  // ***************************************************************************
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Méhtodes de gestion des la définition des champs
-  //////////////////////////////////////////////////////////////////////////////
-  /**
-   * Add a new field definition on current object
-   *
-   * @param string $sName           Nom 'public' interne du champs.
-   * @param string $sSQLFieldName   Champ SQL associé.
-   */
-  public function addNewFieldDefinition($sName, $sSQLFieldName)
-  {
-    if(!\array_key_exists($sName,$this->_aFieldsDefinition))
-    {
-      $this->_aFieldsDefinition[$sName] = $sSQLFieldName;
-    }
-    else {
-      throw new ApplicationException(
-        "addNewFieldDefinition",
-        "Le champ '%s' est deja declare.",
-        [$sSettingsFilepath]
-      );
-    }
-  }//end addNewFieldDefinition()
-
-  /**
-   * addNewKeyFieldDefinition
-   *
-   * Ajout d'une nouvelle clé.
-   *
-   * @param string $sName           Nom 'public' interne du champs.
-   * @param string $sSQLFieldName   Champ SQL associé.
-   */
-  public function addNewKeyFieldDefinition($sName, $sSQLFieldName)
-  {
-    if(!\array_key_exists($sName,$this->_aDbKeys))
-    {
-      $this->_aDbKeys[$sName] = $sSQLFieldName;
-      // Ajout au référentiel de champs commun!
-      $this->addNewFieldDefinition($sName, $sSQLFieldName);
-    }
-    else {
-      throw new ApplicationException(
-        "addNewKeyFieldDefinition",
-        "Le champ '%s' (sql:%s) est deja defini comme cle de l'objet.",
-        [$sName,$sSQLFieldName]
-      );
-    }
-  }//end addNewKeyFieldDefinition()
 
   public function getFieldsDefinition()
   {
     return $this->_aFieldsDefinition;
   }
 
-  /**
-   * Return true if field is defined
-   *
-   * @param  string   $sFieldName   Field unique name.
-   * @return boolean  true if defined
-   */
-  public function isFieldNameDefined($sFieldName)
-  {
-    return \array_key_exists($sFieldName,$this->_aFieldsDefinition);
-  }//end isFieldNameDefined()
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Méhtodes de gestion des valeurs de champs
-  //////////////////////////////////////////////////////////////////////////////
 
+  // ***************************************************************************
+  // Value management methods
+  // ***************************************************************************
   /**
-   * Set a Field value
+   * Set the initial value of a field
    *
-   * @param string  $sFieldName   Nom interne du champs
-   * @param mixed   $xValue       Valeur à définir.
+   * @param string  $sFieldName    Field name to update
+   * @param mixed   $xValue        Field value to set
    */
-  public function setFieldValue($sFieldName,$xValue)
+  protected function setFieldInitialValue($sFieldName,$xValue)
   {
-    $sSQLFieldName = $this->getSQLFieldNameFromFieldName($sFieldName);
-    $this->_aFieldsCurrentValues[$sSQLFieldName] = $xValue;
-  }//end setFieldValue()
+    $this->_oFields->setFieldInitialValue($sFieldName,$xValue);
+  }//end setFieldInitialValue()
 
   /**
    * Set the initial value of a field
    *
-   * @param string  $sFieldName   Nom interne du champs
-   * @param mixed   $xValue       Valeur à définir.
+   * @param string  $sFieldName    Field name to update
+   * @param mixed   $xValue        Field value to set
    */
-  protected function setFieldInitialValue($sFieldName,$xValue)
+  public function setFieldValue($sFieldName,$xValue)
   {
-    // DEBUG echo sprintf("Affectation %s => %s \n",$sFieldName,$xValue);
-    $sSQLFieldName = $this->getSQLFieldNameFromFieldName($sFieldName);
-    $this->_aFieldsInitialValues[$sSQLFieldName] = $xValue;
-  }//end setFieldInitialValue()
+    $this->_oFields->setFieldValue($sFieldName,$xValue);
+  }//end setFieldValue()
 
   /**
-   * Set the initial value of a field (SQLName)
+   * Return a Field value
    *
-   * @param string  $sSQLFieldName    Nom SQL du champs
-   * @param mixed   $xValue           Valeur à définir.
-   */
-  protected function setSQLFieldInitialValue($sSQLFieldName,$xValue)
-  {
-    $this->_aFieldsInitialValues[$sSQLFieldName] = $xValue;
-  }//end setSQLFieldInitialValue()
-
-  /**
-   * Return Field value
-   *
+   * @throws DatabaseObjectException(Field not defined)
    * @param  string $sFieldName   Field unique name.
-   * @return mixed  Field value.
+   * @return mixed  Field value (null).
    */
   public function getFieldValue($sFieldName)
   {
-    $result = null;
-    if ($this->isFieldNameDefined($sFieldName)) {
-      $sSQLFieldName = $this->getSQLFieldNameFromFieldName($sFieldName);
-
-      if(\array_key_exists($sSQLFieldName,$this->_aFieldsCurrentValues) && !\is_null($this->_aFieldsCurrentValues[$sSQLFieldName]) )
-      {
-        $result =  $this->_aFieldsCurrentValues[$sSQLFieldName];
-      }
-      elseif (\array_key_exists($sSQLFieldName,$this->_aFieldsInitialValues)) {
-        $result =  $this->_aFieldsInitialValues[$sSQLFieldName];
-      }
-
-    } else {
-      throw new ApplicationException(
-        "getFieldValue",
-        "Le champ '%s' n'est pas declare. Impossible de trouver sa valeur.",
-        [$sFieldName]
-      );
-    }
-    return $result;
+    return $this->_oFields->getFieldValue($sFieldName);
   }//end getFieldValue()
 
   /**
-   * Retourne le nom SQL du champs depuis son nom interne
-   *
-   * @param  string   $sName  Nom interne du champs à chercher.
-   * @return string   NULL si non trouvée.
-   */
-  public function getSQLFieldNameFromFieldName($sName)
-  {
-    $result = null;
-    if(\array_key_exists($sName,$this->_aFieldsDefinition))
-    {
-      $result =  $this->_aFieldsDefinition[$sName];
-    }
-    return $result;
-  }//end getSQLFieldNameFromFieldName()
-
-  /**
-   * Retourne le nom de la table en base
+   * Return main table name
    *
    * @return string   Nom de la table en base de données.
    */
-  protected function getTablename()
+  public function getTablename()
   {
     return $this->_sTablename;
   }//end getTablename()
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Chargement/Création/Mise à jour de l'objet en DB
-  //////////////////////////////////////////////////////////////////////////////
+  // ***************************************************************************
+  // LOAD DATA MANAGEMENT
+  // ***************************************************************************
   /**
    * Load object from conditions (WHERE)
    *
-   * @param  array $aCondition  Array of conditions.
+   * @param  array $aCondition  Array of conditions [[uid,1],[mdl,3]]
    * @return [type]             [description]
    */
-  public function loadObjectFromCondition($aCondition)
+  public function loadObject($aCondition)
   {
     try {
       // SQL Select query generation!
-      $lsSQLQuery = SQLQueryGenerator::generateSelectSQLQuery(
-        $this->_aFieldsDefinition,
-        $this->_sTablename,
-        $aCondition,
-        null
-      );
+      $lsSQLQuery = SQLQueryGenerator::generateSelectSQLQueryFromDatabaseObject($this,$aCondition);
 
-      //print_r($aCondition);
+      // DEBUG print_r($aCondition);
 
       // DatabaseHandler execution !
       $laResult = $this->_oDbConnection->queryAndFetch($lsSQLQuery);
 
       if (count($laResult)>1) {
-        throw new ApplicationException(
-          "loadObjectFromCondition",
-          "Impossible de charger l'objet - Plusieurs donnees sources trouvees. Nb: %s",
-          \strval(count($laResult))
+        throw new DatabaseObjectException(
+          "Impossible de charger l'objet - Plusieurs donnees sources trouvees. Nb: %s | Conditions: %s ",
+          [\strval(count($laResult)),
+          var_export($aCondition,true)]
         );
       }elseif (count($laResult)==0) {
-        throw new ApplicationException(
-          "loadObjectFromCondition",
-          "Impossible de charger l'objet - Aucune donnee trouvee.",
-          ''
+        throw new DatabaseObjectException(
+          "Impossible de charger l'objet - Aucune donnee trouvee - (Conditions: %s).",
+          [var_export($aCondition,true)]
         );
       }
+
       // Loading first row from dataresult!
       $laRow = $laResult[0];
-      foreach ($laRow as $lsColumnName => $lsColumnValue) {
-        if(!empty($lsColumnName)) {
-          $this->setFieldInitialValue($lsColumnName,$lsColumnValue);
-        }
-      }
-      $this->resetCurrentValues();
+      $this->_loadInitialFieldValueFromArray($laRow);
+
     } catch (\Exception $e) {
-      throw new ApplicationException(
-        "loadObjectFromCondition",
+      throw new DatabaseObjectException(
         "Erreur durant le chargement de l'objet : %s",
         $e->getMessage()
       );
     }
   }//end loadObject()
 
+  /**
+   * Set Current Object fields initial values from associative array
+   *
+   * @param  array $aFieldValueArray  Array of values
+   */
+  private function _loadInitialFieldValueFromArray($aFieldValueArray)
+  {
+    $this->_oFields->resetAllInitialFieldValue();
+    foreach ($aFieldValueArray as $lsColumnName => $lsColumnValue) {
+      if(!empty($lsColumnName)) {
+        $this->setFieldInitialValue($lsColumnName,$lsColumnValue);
+      }
+    }
+  }//end _loadInitialFieldValueFromArray()
+
+  /**
+   * Set Current Object fields values from associative array
+   *
+   * @param  array $aFieldValueArray  Array of values
+   */
+  private function _loadFieldValueFromArray($aFieldValueArray)
+  {
+    $this->_oFields->resetAllInitialFieldValue();
+    foreach ($aFieldValueArray as $lsColumnName => $lsColumnValue) {
+      if(!empty($lsColumnName)) {
+        $this->setFieldValue($lsColumnName,$lsColumnValue);
+      }
+    }
+  }//end _loadFieldValueFromArray()
+
+  // ***************************************************************************
+  // RECORD DATA - INSERT / UPDATE
+  // ***************************************************************************
   /**
    * Enregistre l'objet en base de données.
    *
@@ -491,19 +414,6 @@ class DatabaseObject
   }//end generateKeysSQLCondition()
 
   /**
-   * RAZ des valeurs en cours
-   *
-   * @internal Défini à null le tableau des valeurs depuis celui des def de champs.
-   */
-  protected function resetCurrentValues()
-  {
-    // Reset to null all fields current values to null!
-    foreach ($this->_aFieldsDefinition as $key => $value) {
-      $this->_aFieldsCurrentValues[$value] = null;
-    }
-  }//end resetCurrentValues()
-
-  /**
    * Renvoi un tableau de données associatives correspondant aux objet
    * de la classe courante dont la condition a été appliqué
    *
@@ -579,7 +489,6 @@ class DatabaseObject
 
     return $laResult;
   }//end toAssocArray()
-
 }//end class
 
 ?>

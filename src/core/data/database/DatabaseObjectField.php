@@ -67,6 +67,19 @@ class DatabaseObjectField
    * @var bool
    */
   protected $_isKey               = false;
+  /**
+   * Linked tablename
+   *
+   * @var string
+   */
+  protected $_sLinkedTableName    = null;
+  /**
+   * Linked Field constraints
+   *
+   * @example [['fieldCurrentObject','fieldDestination']]
+   * @var array
+   */
+  protected $_aLinkedTableJoin    = [];
 
   // ***************************************************************************
   // Default constructor
@@ -83,30 +96,34 @@ class DatabaseObjectField
    * @param boolean $isMandatory        Field is Mandatory ?
    * @param boolean $isKey              Field is Key of DatabaseObject
    */
-  function __construct($sInternalFieldName,$sFieldName,$sSQLFieldDef,$sSQLFieldAlias,$sFieldType,$xDefaultValue=null,$isMandatory=false,$isKey=false)
+  function __construct($sInternalFieldName,$sFieldName,$sSQLFieldDef,$sSQLFieldAlias,$sFieldType,$xDefaultValue=null,$isMandatory=false,$isKey=false,$sLinkTablename=null,$aLinkTable=[])
   {
     $this->_sInternalFieldName  = $sInternalFieldName;
     $this->_sFieldName          = $sFieldName;
-    $this->_sSQLFieldDef        = $sSQLFieldName;
+    $this->_sSQLFieldDef        = $sSQLFieldDef;
     $this->_sSQLFieldAlias      = $sSQLFieldAlias;
     $this->_sFieldType          = $sFieldType;
     $this->_xDefaultValue       = $xDefaultValue;
     $this->_isMandatory         = $isMandatory;
     $this->_isKey               = $isKey;
+    $this->_sLinkedTableName    = $sLinkTablename;
+    $this->_aLinkedTableJoin    = $aLinkTable;
   }//end __construct()
 
   // ***************************************************************************
   // Getters
   // ***************************************************************************
-  public function getDefaultValue() { return $this->_xDefaultValue; }
-  public function getName()         { return $this->_sFieldName; }
-  public function getSQLDefinition(){ return $this->_sSQLFieldDef; }
-  public function getSQLAlias()     { return $this->_sSQLFieldAlias; }
-  public function getFieldType()    { return $this->_sFieldType; }
-  public function getInitialValue() { return $this->$_xInitValue; }
-  public function getValue()        { return $this->_xValue; }
-  public function isMandatory()     { return $this->_isMandatory; }
-  public function isKey()           { return $this->_isKey; }
+  public function getDefaultValue()   { return $this->_xDefaultValue; }
+  public function getName()           { return $this->_sFieldName; }
+  public function getSQLDefinition()  { return $this->_sSQLFieldDef; }
+  public function getSQLAlias()       { return $this->_sSQLFieldAlias; }
+  public function getFieldType()      { return $this->_sFieldType; }
+  public function getInitialValue()   { return $this->$_xInitValue; }
+  public function getValue()          { return $this->_xValue; }
+  public function isMandatory()       { return $this->_isMandatory; }
+  public function isKey()             { return $this->_isKey; }
+  public function getLinkedTableName(){ return $this->_sLinkedTableName; }
+  public function getLinkedTableJoinConstraintsArray()  { return $this->_aLinkedTableJoin; }
 
   // ***************************************************************************
   // Setters
@@ -123,10 +140,9 @@ class DatabaseObjectField
    * Set initial value of field
    * @param mixed $xValue   Value to set
    */
-  protected function setInitialValue($xValue) {
+  public function setInitialValue($xValue) {
     $this->_xValue = $xValue;
   }//end setValue()
 
 }//end class
-
 ?>

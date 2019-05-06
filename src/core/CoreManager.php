@@ -82,7 +82,7 @@ class CoreManager
    *
    * @return GMDS\Core\Data\DatabaseHandler
    */
-  public static function getDefaultDatabaseConnection()
+  public static function getDefaultDatabaseConnection():DatabaseHandler
   {
     return DatabaseManager::getDefaultConnection();
   }//end getDefaultDatabaseConnection()

@@ -6,7 +6,7 @@
       "dbtype":"mysql",
       "host":"localhost",
       "port":"3336",
-      "schema":"GMDS",
+      "schema":"GMDS_DEV",
       "user":"root",
       "pass":"dev"
     }

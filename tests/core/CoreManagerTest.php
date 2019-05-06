@@ -13,7 +13,6 @@ final class CoreManagerTest extends TestCase
 		/**
 		 * testLoadSystemSettingsFromNonExistingFile
 		 *
-		 * Chargement des paramètres depuis un fichier invalide.
 		 * @expectedException GMDS\Core\Exception\CoreException
 		 */
   	public function testLoadSystemSettingsFromNonExistingFile(): void
@@ -24,7 +23,6 @@ final class CoreManagerTest extends TestCase
 		/**
 		 * testLoadSystemSettingsFromInvalidFileMandatoryFieldsMissing
 		 *
-		 * Chargement des paramètres depuis un fichier au format JSON invalide.
 		 * @expectedException GMDS\Core\Exception\CoreException
 		 */
   	public function testLoadSystemSettingsFromInvalidFileMandatoryFieldsMissing(): void
@@ -36,7 +34,6 @@ final class CoreManagerTest extends TestCase
     /**
      * testLoadSystemSettingsFromInvalidFileDBFieldsMissing
      *
-     * Chargement des paramètres depuis un fichier au format JSON invalide.
      * @expectedException GMDS\Core\Exception\CoreException
      */
     public function testLoadSystemSettingsFromInvalidFileDBFieldsMissing(): void
@@ -48,93 +45,48 @@ final class CoreManagerTest extends TestCase
     /**
      * testLoadSystemSettingsFromValidFile
      *
+     * Most common case.
      */
     public function testLoadSystemSettingsFromValidFile(): void
     {
       $lsDirSettingsFile =  './tests/test-settings/';
       CoreManager::loadSystemSettingsFromJSONFile($lsDirSettingsFile.'app-settings-local.valid.json');
+      CoreManager::setApplicationLoggerFilepath('./logs/logApplication.log');
+      CoreManager::setApplicationDatabaseLoggerFilepath('./logs/logDBQueries.log');
       $this->assertEquals(true,true);
     }//end testLoadSystemSettingsFromValidFile()
 
-    /**
-     * testDeployCoreDatabaseStructure
-     *
-     *  @depends testLoadSystemSettingsFromValidFile
-     */
-    public function testDeployCoreDatabaseStructure()
-    {
-      $lsDirSettingsFile = './tests/test-settings/';
-      CoreManager::setApplicationLoggerFilepath('./logs/logApplication.log');
-      CoreManager::setApplicationDatabaseLoggerFilepath('./logs/logDBQueries.log');
-      CoreManager::deployDatabaseSchemaIntoDatabase();
-      $this->assertEquals(true,true);
-    }//end testDeployCoreDatabaseStructure()
-
     // /**
-    //  * testApplicationLoadSettingsFileMandaotryParamMissing
+    //  * testDeployCoreDatabaseStructure
     //  *
-    //  * Chargement des paramètres depuis un fichier au format JSON invalide.
-    //  * @expectedException GOM\Core\Internal\Exception\ApplicationSettingsMandatorySettingNotDefinedException
+    //  * @depends testLoadSystemSettingsFromValidFile
     //  */
-    // public function testApplicationLoadSettingsFileMandatoryParamMissing(): void
+    // public function testDeployCoreDatabaseTables()
     // {
-    //  //	$this->expectException(\Exception::class);
-    //   Application::loadDBSettings('./tests/datasets/app-settings_02-invalidNoMand.json');
-    // }//end testApplicationLoadSettingsFileMandatoryParamMissing()
+    //   $lsDirSettingsFile = './tests/test-settings/';
     //
-    // /**
-    //  * testApplicationInvalidDatabaseConnection
-    //  *
-    //  * Chargement des paramètres depuis un fichier au format JSON invalide.
-    //  * @expectedException \PDOException
-    //  */
-    // public function testApplicationInvalidDatabaseConnection(): void
-    // {
-    //    Application::loadDBSettings('./tests/datasets/app-settings_03-invalidconnec.json');
-    // }//end testApplicationInvalidDatabaseConnection()
+    //   $lDBHandler = CoreManager::getDefaultDatabaseConnection();
+    //   $lDBHandler->execScript("DROP SCHEMA ".$lDBHandler->getSchemaName().";");
+    //   $lDBHandler->execScript("CREATE SCHEMA ".$lDBHandler->getSchemaName().";");
     //
-		// /**
-		//  * testApplicationLoadValideSettingsFile
-		//  *
-		//  * Chargement des paramètres depuis un fichier au format JSON valide.
-    //  */
-  	// public function testApplicationLoadSettingsFromValidFile(): void
-  	// {
-		//  	Application::loadDBSettings('./tests/datasets/app-settings_02-valid.json');
-		//  	$this->assertTrue(true);
-		// }//end testApplicationLoadSettingsFromValidFile()
-    //
-    // // /**
-    // //  * testApplicationDeployingIntoTargetDatabase
-    // //  *
-    // //  * Chargement des paramètres depuis un fichier au format JSON valide.
-    // //  */
-    // // public function testApplicationDeployingIntoTargetDatabase(): void
-    // // {
-    // //   Application::deploySchemaToTargetDB(
-    // //     'GDM_TEST',
-    // //     'root',
-    // //     'dev',
-    // //     '172.17.0.2',
-    // //     '3306'
-    // //   );
-    // //   $this->assertTrue(true);
-    // // }//end testApplicationDeployingIntoTargetDatabase()
-    //
-    //
-    // /**
-    //  * testApplicationDeployingDefaultApplicationDatabase
-    //  *
-    //  * Chargement des paramètres depuis un fichier au format JSON valide.
-    //  */
-    // public function testApplicationDeployingDefaultApplicationDatabase(): void
-    // {
-    //   Application::loadDBSettings('./tests/datasets/app-settings_02-valid.json');
-    //   Application::deploySchemaToDefaultAppliDB(
-    //     'root',
-    //     'dev'
+    //   $laResult = $lDBHandler->queryAndFetch(
+    //     sprintf(
+    //       "select count(*) as NB from information_schema.tables WHERE table_schema ='%s';",
+    //       $lDBHandler->getSchemaName()
+    //     )
     //   );
-    //   $this->assertTrue(true);
-    // }//end testApplicationDeployingDefaultApplicationDatabase()
+    //
+    //   $this->assertEquals(0,intval($laResult[0]['NB']));
+    //   CoreManager::deployDatabaseSchemaIntoDatabase();
+    //
+    //   $laResult = $lDBHandler->queryAndFetch(
+    //     sprintf(
+    //       "select count(*) as NB from information_schema.tables WHERE table_schema ='%s';",
+    //       $lDBHandler->getSchemaName()
+    //     )
+    //   );
+    //
+    //   $this->assertEquals(12,intval($laResult[0]['NB']));
+    // }//end testDeployCoreDatabaseStructure()
 
 }//end class

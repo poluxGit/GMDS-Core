@@ -1,11 +1,13 @@
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
-        <testsuite name="CoreManagerLoadSettings">
+        <testsuite name="CoreMainFunctionnalities">
           <file>tests/core/CoreManagerTest.php</file>
+          <file>tests/core/data/database/DatabaseObjectTest.php</file>
+          <file>tests/core/data/database/SQL/SQLQueryGeneratorTest.php</file>
+
+
         </testsuite>
-        <testsuite name="DatabaseComponentsTesting">
-          <file>tests/core/data/database/DatabaseHandlerTest.php</file>
-        </testsuite>
+
         <!-- <testsuite name="CoreDataManagement">
           <file>tests/core/DataFactoryTest.php</file>
           <file>tests/core/data/ModelTest.php</file>

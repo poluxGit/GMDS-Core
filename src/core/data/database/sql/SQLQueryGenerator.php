@@ -2,11 +2,142 @@
 
 namespace GMDS\Core\Data\Database\SQL;
 
+use GMDS\Core\Data\Database\DatabaseObject;
+use GMDS\Core\Data\Database\DatabaseObjectField;
+use GMDS\Core\Data\Database\DatabaseObjectFields;
+
+
+use GMDS\Core\Exception\SQLQueryGeneratorException;
+
 /**
  * SQLQueryGenerator - Classe de génération de requete SQL
  */
-class SQLQueryGenerator
-{
+class SQLQueryGenerator {
+
+  // ***************************************************************************
+  // Friends classes
+  // ***************************************************************************
+
+  /**
+   * Generate a Select SQL Query (without WHERE) according object in parameters
+   *
+   * @param  DatabaseObject $oDBObj             Source Object
+   * @param  array          $aWhereConditions   WHERE Conditions
+   * @return string                   Select query generated
+   */
+  public static function generateSelectSQLQueryFromDatabaseObject(DatabaseObject $oDBObj, $aWhereConditions=[]):string
+  {
+    $lsFinalSQLQuery  = '';
+    $laSelectPart     = [];
+    $laFromPart       = [];
+    $laWherePart      = [];
+    $lsMainTableAlias = 'tObj';
+    $lsLinkTableAlias = 'tLnk';
+    $liLinkTableCount = 0;
+
+    // Main Table integration!
+    array_push($laFromPart,$oDBObj->getTablename()." ".$lsMainTableAlias);
+
+    // For each fields in Order !
+    foreach ($oDBObj->_oFields->getAllFieldId() as $value) {
+      $loField = $oDBObj->_oFields->getFieldObjectById($value);
+      if ($loField instanceof DatabaseObjectField) {
+        // Linked field ?
+        if (!\is_null($loField->getLinkedTableName())) {
+          // No Join Constraints => SQLQueryGeneratorException!
+          if(count($loField->getLinkedTableJoinConstraintsArray()) === 0) {
+            throw new SQLQueryGeneratorException(
+              'Field definition not valid : Linked table without join constraints (linked table : %s).',
+              [$loField->getLinkedTableName()]
+            );
+          } else {
+            // New alias for linked table!
+            $liLinkTableCount++;
+            $lsLinkTableAliasInstance = $lsLinkTableAlias.$liLinkTableCount;
+
+            // From Part generation!
+            array_push(
+              $laFromPart,
+              sprintf(
+                "%s %s %s ON %s.%s = %s.%s",
+                $loField->getLinkedTableJoinConstraintsArray()[0],
+                $loField->getLinkedTableName(),
+                $lsLinkTableAliasInstance,
+                $lsLinkTableAliasInstance,
+                $loField->getLinkedTableJoinConstraintsArray()[1],
+                $lsMainTableAlias,
+                $loField->getLinkedTableJoinConstraintsArray()[2]
+              )
+            );
+
+            // Select Part generation!
+            array_push(
+              $laSelectPart,
+              sprintf(
+                "%s.%s as %s",
+                $lsLinkTableAliasInstance,
+                $loField->getSQLDefinition(),
+                $loField->getSQLAlias()
+              )
+            );
+          }
+        } else {
+          // Normal field!
+          // Select Part generation!
+          array_push(
+            $laSelectPart,
+            sprintf(
+              "%s.%s as %s",
+              $lsMainTableAlias,
+              $loField->getSQLDefinition(),
+              $loField->getSQLAlias()
+            )
+          );
+        }
+      } else {
+        // Field Data invalid (not instanceof)
+        throw new SQLQueryGeneratorException(
+          "Field with ID %s can't be founded!",
+          [$value]
+        );
+      }
+    }
+
+    // Final SQL generation!
+    $lsFinalSQLQuery = sprintf(
+      "SELECT %s FROM %s",
+      implode(', ', $laSelectPart),
+      implode(' ', $laFromPart)
+    );
+
+    // WHERE PART!
+    if (count($aWhereConditions)>0) {
+      foreach ($aWhereConditions as $value) {
+        //echo "Value ".$value[0]." - ".$value[1];
+        $loField = $oDBObj->_oFields->getFieldObjectById($value[0]);
+        \array_push(
+          $laWherePart,
+          sprintf(
+            "%s.%s = %s",
+            $lsMainTableAlias,
+            $loField->getSQLDefinition(),
+            ($loField->getFieldType()=='int'?$value[1]:"'".$value[1]."'")
+          )
+        );
+      }
+
+      $lsFinalSQLQuery = sprintf(
+        "%s WHERE %s",
+        $lsFinalSQLQuery,
+        implode(' AND ', $laWherePart)
+      );
+    }
+
+    return $lsFinalSQLQuery;
+  }//end generateSelectSQLQueryFromDatabaseObject()
+
+
+
   /**
    * Generate SQL Select Query
    *
